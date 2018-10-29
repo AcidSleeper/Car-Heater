@@ -1,13 +1,10 @@
-#########################################################################################################
-# Car heater package                                                                                    #
-# Source: https://github.com/Danielhiversen/home-assistant_config/blob/master/packages/alarm_clock.yaml #
-#########################################################################################################
+
  
 # Automation section
 automation:
 
-  #Kia-sektionen
-  #Startar motorvärmaren 3 timmar före avresetid
+  #Kia-section
+  #Starts heater 3 hours before departuretime
   - alias: "heater kia minus 20"
     initial_state: false
     trigger:
@@ -31,7 +28,7 @@ automation:
        - service: homeassistant.turn_off
          entity_id: automation.heater_kia_minus_20, automation.heater_kia_minus_10, automation.heater_kia_plus_1, automation.heater_kia_plus_10
          
-  #Startar motorvärmaren 2 timmar före avresetid
+  #Starts heater 2 hours before departuretime
   - alias: "heater kia minus 10"
     initial_state: false
     trigger:
@@ -55,7 +52,7 @@ automation:
        - service: homeassistant.turn_off
          entity_id: automation.heater_kia_minus_10, automation.heater_kia_plus_1, automation.heater_kia_plus_10, automation.heater_kia_minus_20
          
-  #Startar motorvärmaren 1 timme före avresetid 
+  #Starts heater 1 hour before departuretime 
   - alias: "heater kia plus 1"
     initial_state: false
     trigger:
@@ -79,7 +76,7 @@ automation:
        - service: homeassistant.turn_off
          entity_id: automation.heater_kia_plus_1, automation.heater_kia_plus_10, automation.heater_kia_minus_20, automation.heater_kia_minus_10
   
-  #Startar motorvärmaren 30 minuter före avresetid
+  #Starts heater 30 minutes before departuretime
   - alias: "heater kia plus 10"
     initial_state: false
     trigger:
@@ -129,8 +126,8 @@ automation:
        - service: homeassistant.turn_off
          entity_id: automation.heater_kia_off, switch.qubino_zmnhadx_flush_1_relay_switch
 
-  #Subaru-sektionen
-  #Startar motorvärmaren 3 timmar före avresetid
+  #Subaru-section
+  #Starts heater 3 hours before departuretime
   - alias: "heater subaru minus 20"
     initial_state: false
     trigger:
@@ -154,7 +151,7 @@ automation:
        - service: homeassistant.turn_off
          entity_id: automation.heater_subaru_minus_20, automation.heater_subaru_minus_10, automation.heater_subaru_plus_1, automation.heater_subaru_plus_10
          
-  #Startar motorvärmaren 2 timmar före avresetid
+  #Starts heater 2 hours before departuretime
   - alias: "heater subaru minus 10"
     initial_state: false
     trigger:
@@ -178,7 +175,7 @@ automation:
        - service: homeassistant.turn_off
          entity_id: automation.heater_subaru_minus_10, automation.heater_subaru_plus_1, automation.heater_subaru_plus_10, automation.heater_subaru_minus_20
          
-  #Startar motorvärmaren 1 timme före avresetid 
+  #Starts heater 1 hour before departuretime
   - alias: "heater subaru plus 1"
     initial_state: false
     trigger:
@@ -202,7 +199,7 @@ automation:
        - service: homeassistant.turn_off
          entity_id: automation.heater_subaru_plus_1, automation.heater_subaru_plus_10, automation.heater_subaru_minus_20, automation.heater_subaru_minus_10
   
-  #Startar motorvärmaren 30 minuter före avresetid
+  #Starts heater 30 minutes before departuretime
   - alias: "heater subaru plus 10"
     initial_state: false
     trigger:
@@ -290,7 +287,7 @@ input_number:
 # Bolean section
 input_boolean:
   heaterstatus_kia:
-    name: Aktivera
+    name: Activate
     initial: on
     icon: mdi:check-outline
   heaterstatus_subaru:
@@ -303,13 +300,13 @@ sensor:
   - platform: template
     sensors:
       departuretime_kia:
-        friendly_name: 'Avresetid Kia'
+        friendly_name: 'Departeuretime Kia'
         value_template: '{% if states.input_number.heater_kia_hour.state|round(0)|string|length == 1 %}0{% endif %}{{ states.input_number.heater_kia_hour.state|round(0)|string }}:{% if states.input_number.heater_kia_minutes.state|round(0)|string|length == 1 %}0{% endif %}{{ states.input_number.heater_kia_minutes.state|round(0)|string }}'
         entity_id: 
          - input_number.heater_kia_minutes
          - input_number.heater_kia_hour
       departuretime_subaru:
-        friendly_name: 'Avresetid Subaru'
+        friendly_name: 'Departuretime Subaru'
         value_template: '{% if states.input_number.heater_subaru_hour.state|round(0)|string|length == 1 %}0{% endif %}{{ states.input_number.heater_subaru_hour.state|round(0)|string }}:{% if states.input_number.heater_subaru_minutes.state|round(0)|string|length == 1 %}0{% endif %}{{ states.input_number.heater_subaru_minutes.state|round(0)|string }}'
         entity_id: 
          - input_number.heater_subaru_minutes
@@ -327,12 +324,12 @@ group:
       - group.mvtemperaturutegarage
      
   mvtemperaturutegarage:
-    name: "Temperatur Ute - Garage"
+    name: "Temperature Outside - Garage"
     entities:
       - sensor.qubino_zmnhadx_flush_1_relay_temperature
     
   mvkia:
-    name: "Motorvärmare Kia"
+    name: "Heater Kia"
     entities:
       - sensor.departuretime_kia
       - sensor.heater_start_time_kia
@@ -343,7 +340,7 @@ group:
       - sensor.qubino_zmnhadx_flush_1_relay_power
    
   mvsubaru:
-    name: "Motorvärmare Subaru"
+    name: "Heater Subaru"
     entities:
       - sensor.departuretime_subaru
       - sensor.heater_start_time_subaru
