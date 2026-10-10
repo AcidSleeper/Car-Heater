@@ -11,4 +11,3 @@ Using Packages - How to install packages: https://www.home-assistant.io/docs/con
 
 Thoughts and ideas from:
  - https://github.com/Gnaget2/Car-Heater-Package
- - https://snillevilla.se/automations/11188/
