@@ -23,6 +23,7 @@ Every 5 minutes, for each car whose **Activate** switch is on, the automation:
 3. Calculates `now + lead time` and compares it with the departure time.
 4. If they match, the heater switch is turned **on**.
 5. When the current time equals the departure time, the heater switch is turned **off**.
+
 | Outdoor temperature | Heater starts before departure |
 | ------------------- | ------------------------------ |
 | below -20 °C        | 180 min (3 h)                  |
