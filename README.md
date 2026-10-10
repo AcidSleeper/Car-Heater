@@ -130,7 +130,7 @@ outdoor_temp: "{{ states('sensor.your_outdoor_temperature') | float(99) }}"
 - The heater is switched off only if the automation runs at exactly the departure minute. If Home Assistant is restarting at that moment, the heater stays on until you turn it off manually.
 - The schedule runs every day while *Activate* is on. There is no weekday filter.
 - The `initial: on` setting on the input booleans resets them to on after every restart.
-- `group.heater` references `sensor.heater_start_time_kia` and `sensor.heater_start_time_subaru`, which are not defined in this package. If you do not define them elsewhere in your configuration they show up as missing entities, so you can either remove them from the groups or define them yourself.
+
 ## Credits
  
 Thoughts and ideas from [Gnaget2/Car-Heater-Package](https://github.com/Gnaget2/Car-Heater-Package).
