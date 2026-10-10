@@ -1,17 +1,11 @@
-# Ny och förbättrad version av Carheater
-
 automation:
-  #Kia-sektionen (konsoliderad)
+  #Kia-sektionen 
   - alias: "Motorvärmare – Kia (start & stopp)"
     mode: single
     trigger:
       - platform: time_pattern
         minutes: "/5"
         seconds: 2
-    condition:
-      - condition: state
-        entity_id: input_boolean.heaterstatus_kia
-        state: "on"
     action:
       - variables:
           outdoor_temp: "{{ states('sensor.garage_temperatur_utomhus') | float(99) }}"
@@ -25,41 +19,43 @@ automation:
           # Under -20°C → starta 180 min (3h) innan avresa
           # -20 till -10°C → starta 120 min (2h) innan avresa
           # -10 till 1°C → starta 60 min (1h) innan avresa
-          # 1°C eller varmare → starta 30 min innan avresa  
+          # 1°C eller varmare → starta 30 min innan avresa
           target_time: "{{ (now() + timedelta(minutes=lead_minutes|int)).strftime('%H:%M') }}"
           departure_time: "{{ states('sensor.departuretime_kia') }}"
           now_time: "{{ now().strftime('%H:%M') }}"
       - if:
+          - condition: state
+            entity_id: input_boolean.heaterstatus_kia
+            state: "on"
           - condition: template
             value_template: "{{ target_time == departure_time }}"
         then:
-          - service: switch.turn_on
+          - action: switch.turn_on
             target:
               entity_id: switch.kia_motorvarmare
       - if:
+          - condition: state
+            entity_id: switch.kia_motorvarmare
+            state: "on"
           - condition: template
-            value_template: "{{ now_time == departure_time }}"
+            value_template: "{{ now_time >= departure_time }}"
         then:
-          - service: switch.turn_off
+          - action: switch.turn_off
             target:
               entity_id: switch.kia_motorvarmare
 
-  #Subaru-sektionen (konsoliderad)
+  #Subaru-sektionen
   - alias: "Motorvärmare – Subaru (start & stopp)"
     mode: single
     trigger:
       - platform: time_pattern
         minutes: "/5"
         seconds: 2
-    condition:
-      - condition: state
-        entity_id: input_boolean.heaterstatus_subaru
-        state: "on"
     action:
       - variables:
           outdoor_temp: "{{ states('sensor.garage_temperatur_utomhus') | float(99) }}"
           lead_minutes: >
-            {% if outdoor_temp < -20 %} 180
+            {% if outdoor_temp < -20 %} 180 
             {% elif outdoor_temp < -10 %} 120
             {% elif outdoor_temp < 1 %} 60
             {% else %} 30
@@ -68,33 +64,39 @@ automation:
           # Under -20°C → starta 180 min (3h) innan avresa
           # -20 till -10°C → starta 120 min (2h) innan avresa
           # -10 till 1°C → starta 60 min (1h) innan avresa
-          # 1°C eller varmare → starta 30 min innan avresa  
+          # 1°C eller varmare → starta 30 min innan avresa
           target_time: "{{ (now() + timedelta(minutes=lead_minutes|int)).strftime('%H:%M') }}"
           departure_time: "{{ states('sensor.departuretime_subaru') }}"
           now_time: "{{ now().strftime('%H:%M') }}"
       - if:
+          - condition: state
+            entity_id: input_boolean.heaterstatus_subaru
+            state: "on"
           - condition: template
             value_template: "{{ target_time == departure_time }}"
         then:
-          - service: switch.turn_on
+          - action: switch.turn_on
             target:
               entity_id: switch.subaru_motorvarmare
       - if:
+          - condition: state
+            entity_id: switch.subaru_motorvarmare
+            state: "on"
           - condition: template
-            value_template: "{{ now_time == departure_time }}"
+            value_template: "{{ now_time >= departure_time }}"
         then:
-          - service: switch.turn_off
+          - action: switch.turn_off
             target:
               entity_id: switch.subaru_motorvarmare
 
-# --- Everything below is UNCHANGED from your existing config ---
+# --- Helpers, avresetid-sensorer och grupper ---
 
 # Input section
 input_number:
   heater_kia_hour:
     name: Kia Timmar
     icon: mdi:timer-outline
-    initial: 06
+    initial: 6
     min: 0
     max: 23
     step: 1
@@ -110,7 +112,7 @@ input_number:
   heater_subaru_hour:
     name: S-Timmar
     icon: mdi:timer-outline
-    initial: 06
+    initial: 6
     min: 0
     max: 23
     step: 1
@@ -127,23 +129,29 @@ input_number:
 input_boolean:
   heaterstatus_kia:
     name: Aktivera Kia
-    initial: on
+    initial: true
     icon: mdi:check-outline
   heaterstatus_subaru:
-    name: Activate
-    initial: on
+    name: Aktivera Subaru
+    initial: true
     icon: mdi:check-outline
 
 # Sensor section
 template:
   - sensor:
-    - default_entity_id: sensor.departuretime_subaru
-      name: Avresetid Subaru
-      state: '{% if states.input_number.heater_subaru_hour.state|round(0)|string|length == 1 %}0{% endif %}{{ states.input_number.heater_subaru_hour.state|round(0)|string }}:{% if states.input_number.heater_subaru_minutes.state|round(0)|string|length == 1 %}0{% endif %}{{ states.input_number.heater_subaru_minutes.state|round(0)|string }}'
+      - default_entity_id: sensor.departuretime_subaru
+        name: Avresetid Subaru
+        state: >-
+          {%- set hour = states('input_number.heater_subaru_hour') | round(0) | int -%}
+          {%- set minute = states('input_number.heater_subaru_minutes') | round(0) | int -%}
+          {{ "%02d:%02d" | format(hour, minute) }}
 
-    - default_entity_id: sensor.departuretime_kia
-      name: Avresetid Kia
-      state: '{% if states.input_number.heater_kia_hour.state|round(0)|string|length == 1 %}0{% endif %}{{ states.input_number.heater_kia_hour.state|round(0)|string }}:{% if states.input_number.heater_kia_minutes.state|round(0)|string|length == 1 %}0{% endif %}{{ states.input_number.heater_kia_minutes.state|round(0)|string }}'
+      - default_entity_id: sensor.departuretime_kia
+        name: Avresetid Kia
+        state: >-
+          {%- set hour = states('input_number.heater_kia_hour') | round(0) | int -%}
+          {%- set minute = states('input_number.heater_kia_minutes') | round(0) | int -%}
+          {{ "%02d:%02d" | format(hour, minute) }}
 
 # Group section
 group:
@@ -159,7 +167,6 @@ group:
     entities:
       - input_boolean.heaterstatus_kia
       - sensor.departuretime_kia
-      - sensor.heater_start_time_kia
       - input_number.heater_kia_hour
       - input_number.heater_kia_minutes
       - switch.kia_motorvarmare
@@ -170,7 +177,6 @@ group:
     entities:
       - input_boolean.heaterstatus_subaru
       - sensor.departuretime_subaru
-      - sensor.heater_start_time_subaru
       - input_number.heater_subaru_hour
       - input_number.heater_subaru_minutes
       - switch.subaru_motorvarmare
